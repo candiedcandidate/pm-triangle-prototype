@@ -1,0 +1,128 @@
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.25rem 1.25rem 1.5rem;
+}
+
+h1 {
+  margin: 0 0 1.5rem;
+  text-align: center;
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+  color: #0f172a;
+}
+
+.simulator-layout {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+  grid-template-columns: minmax(300px, 1fr) auto;
+}
+
+.triangle-panel {
+  background: #f8fbff;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+}
+
+.triangle-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: none;
+  user-select: none;
+  cursor: crosshair;
+}
+
+.triangle-shape {
+  fill: #eaf4ff;
+  stroke: #2563eb;
+  stroke-width: 1;
+}
+
+.handle-circle {
+  fill: #0f766e;
+  stroke: #ffffff;
+  stroke-width: 0.6;
+}
+
+.handle-crosshair {
+  stroke: #ffffff;
+  stroke-width: 0.75;
+  stroke-linecap: round;
+}
+
+.corner-label {
+  fill: #0f172a;
+  font-size: 4px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.corner-label.start {
+  text-anchor: start;
+}
+
+.corner-label.end {
+  text-anchor: end;
+}
+
+.bars-panel {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.constraint-bar {
+  width: 92px;
+  display: grid;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.constraint-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.constraint-track {
+  height: 220px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.constraint-fill {
+  width: 100%;
+  transition: height 80ms linear;
+}
+
+.constraint-value {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.explanation {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  color: #334155;
+}
+
+@media (max-width: 900px) {
+  .simulator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .bars-panel {
+    width: 100%;
+  }
+
+  .constraint-track {
+    height: 180px;
+  }
+}
