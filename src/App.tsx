@@ -18,6 +18,8 @@ type ConstraintValues = {
   scope: number
 }
 
+type ConstraintWeights = ConstraintValues
+
 type ConstraintBarProps = {
   label: string
   value: number
@@ -58,7 +60,7 @@ const centroid = (triangle: Triangle): Point => ({
   y: (triangle.time.y + triangle.cost.y + triangle.scope.y) / 3,
 })
 
-const barycentricWeights = (point: Point, triangle: Triangle): ConstraintValues => {
+const barycentricWeights = (point: Point, triangle: Triangle): ConstraintWeights => {
   const a = triangle.time
   const b = triangle.cost
   const c = triangle.scope
@@ -103,7 +105,7 @@ const constrainPointToTriangle = (point: Point, triangle: Triangle): Point => {
     )
 }
 
-const mapWeightsToConstraintValues = (weights: ConstraintValues): ConstraintValues => {
+const mapWeightsToScores = (weights: ConstraintWeights): ConstraintValues => {
   const toScore = (weight: number): number =>
     clamp(50 + (weight - 1 / 3) * 75, 0, 100)
 
@@ -168,7 +170,7 @@ function TriangleSimulator() {
   const weights = useMemo(() => barycentricWeights(handle, TRIANGLE), [handle])
 
   const values = useMemo(
-    () => mapWeightsToConstraintValues(weights),
+    () => mapWeightsToScores(weights),
     [weights],
   )
   const liveExplanation = useMemo(
