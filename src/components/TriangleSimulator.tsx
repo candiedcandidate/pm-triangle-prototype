@@ -119,8 +119,8 @@ function TriangleSimulator() {
       </div>
 
       <div className="bars-panel" aria-live="polite">
-        <ConstraintBar label="Time" value={values.time} color="#2563eb" />
         <ConstraintBar label="Cost" value={values.cost} color="#0ea5a4" />
+        <ConstraintBar label="Time" value={values.time} color="#2563eb" />
         <ConstraintBar
           label="Scope / Quality"
           value={values.scope}
