@@ -104,13 +104,13 @@ const constrainPointToTriangle = (point: Point, triangle: Triangle): Point => {
 }
 
 const mapWeightsToScores = (weights: ConstraintValues): ConstraintValues => {
-  const toScore = (weight: number): number =>
+  const toOptimizationScore = (weight: number): number =>
     clamp(50 + (weight - 1 / 3) * 75, 0, 100)
 
   return {
-    time: toScore(weights.time),
-    cost: toScore(weights.cost),
-    scope: toScore(weights.scope),
+    time: toOptimizationScore(weights.time),
+    cost: toOptimizationScore(weights.cost),
+    scope: toOptimizationScore(weights.scope),
   }
 }
 
@@ -122,10 +122,10 @@ const TRIANGLE: Triangle = {
 
 const HANDLE_RADIUS = 3.5
 const BALANCE_THRESHOLD = 0.1
+const DOMINANCE_THRESHOLD = 0.02
 
 const describeConstraintPosition = (weights: ConstraintValues): string => {
   const target = 1 / 3
-  const dominanceThreshold = 0.02
   const maxDeviationFromBalanced = Math.max(
     Math.abs(weights.time - target),
     Math.abs(weights.cost - target),
@@ -143,7 +143,7 @@ const describeConstraintPosition = (weights: ConstraintValues): string => {
     { name: 'scope', value: weights.scope },
   ]
   const dominantConstraints = weightedConstraints.filter(
-    ({ value }) => maxWeight - value <= dominanceThreshold,
+    ({ value }) => maxWeight - value <= DOMINANCE_THRESHOLD,
   )
 
   if (dominantConstraints.length !== 1) {
@@ -308,6 +308,7 @@ function TriangleSimulator() {
         <button
           type="button"
           className="reset-button"
+          aria-label="Reset to balanced position"
           onClick={() => setHandle(triangleCentroid)}
         >
           Reset
