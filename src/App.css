@@ -78,7 +78,9 @@ h1 {
 
 .constraint-bar {
   width: 92px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 0.45rem;
   text-align: center;
 }
@@ -96,6 +98,7 @@ h1 {
 }
 
 .constraint-track {
+  width: 100%;
   height: 220px;
   border-radius: 12px;
   background: #e5e7eb;
