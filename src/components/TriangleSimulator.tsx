@@ -122,7 +122,7 @@ function TriangleSimulator() {
         <ConstraintBar label="Cost" value={values.cost} color="#0ea5a4" />
         <ConstraintBar label="Time" value={values.time} color="#2563eb" />
         <ConstraintBar
-          label="Scope / Quality"
+          label="Scope"
           value={values.scope}
           color="#22c55e"
         />
