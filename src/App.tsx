@@ -18,8 +18,6 @@ type ConstraintValues = {
   scope: number
 }
 
-type ConstraintWeights = ConstraintValues
-
 type ConstraintBarProps = {
   label: string
   value: number
@@ -60,7 +58,7 @@ const centroid = (triangle: Triangle): Point => ({
   y: (triangle.time.y + triangle.cost.y + triangle.scope.y) / 3,
 })
 
-const barycentricWeights = (point: Point, triangle: Triangle): ConstraintWeights => {
+const barycentricWeights = (point: Point, triangle: Triangle): ConstraintValues => {
   const a = triangle.time
   const b = triangle.cost
   const c = triangle.scope
@@ -105,7 +103,7 @@ const constrainPointToTriangle = (point: Point, triangle: Triangle): Point => {
     )
 }
 
-const mapWeightsToScores = (weights: ConstraintWeights): ConstraintValues => {
+const mapWeightsToScores = (weights: ConstraintValues): ConstraintValues => {
   const toScore = (weight: number): number =>
     clamp(50 + (weight - 1 / 3) * 75, 0, 100)
 
@@ -149,7 +147,7 @@ const describeConstraintPosition = (weights: ConstraintValues): string => {
   )
 
   if (dominantConstraints.length !== 1) {
-    return 'The project is leaning toward one constraint, which reduces flexibility in the others.'
+    return 'The project emphasizes multiple constraints at once, reducing flexibility in the others.'
   }
 
   const [{ name: dominantConstraint }] = dominantConstraints
