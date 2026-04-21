@@ -103,18 +103,14 @@ const constrainPointToTriangle = (point: Point, triangle: Triangle): Point => {
     )
 }
 
-const mapPointToConstraintValues = (
-  point: Point,
-  triangle: Triangle,
-): ConstraintValues => {
-  const weights = barycentricWeights(point, triangle)
-  const toScore = (weight: number): number =>
+const mapWeightsToScores = (weights: ConstraintValues): ConstraintValues => {
+  const toOptimizationScore = (weight: number): number =>
     clamp(50 + (weight - 1 / 3) * 75, 0, 100)
 
   return {
-    time: 100 - toScore(weights.time),
-    cost: 100 - toScore(weights.cost),
-    scope: toScore(weights.scope),
+    time: toOptimizationScore(weights.time),
+    cost: toOptimizationScore(weights.cost),
+    scope: toOptimizationScore(weights.scope),
   }
 }
 
@@ -125,6 +121,47 @@ const TRIANGLE: Triangle = {
 }
 
 const HANDLE_RADIUS = 3.5
+const BALANCE_THRESHOLD = 0.1
+const DOMINANCE_THRESHOLD = 0.02
+
+const describeConstraintPosition = (weights: ConstraintValues): string => {
+  const target = 1 / 3
+  const maxDeviationFromBalanced = Math.max(
+    Math.abs(weights.time - target),
+    Math.abs(weights.cost - target),
+    Math.abs(weights.scope - target),
+  )
+
+  if (maxDeviationFromBalanced <= BALANCE_THRESHOLD) {
+    return 'The project is balanced across time, cost, and scope/quality.'
+  }
+
+  const maxWeight = Math.max(weights.time, weights.cost, weights.scope)
+  const weightedConstraints: Array<{ name: 'time' | 'cost' | 'scope'; value: number }> = [
+    { name: 'time', value: weights.time },
+    { name: 'cost', value: weights.cost },
+    { name: 'scope', value: weights.scope },
+  ]
+  const dominantConstraints = weightedConstraints.filter(
+    ({ value }) => maxWeight - value <= DOMINANCE_THRESHOLD,
+  )
+
+  if (dominantConstraints.length !== 1) {
+    return 'The project emphasizes multiple constraints at once, reducing flexibility in the others.'
+  }
+
+  const [{ name: dominantConstraint }] = dominantConstraints
+
+  if (dominantConstraint === 'cost') {
+    return 'Cost efficiency is highest here, but optimizing for lower cost increases schedule pressure and limits scope/quality.'
+  }
+
+  if (dominantConstraint === 'time') {
+    return 'Schedule speed is highest here, but optimizing for faster delivery increases cost pressure and limits scope/quality.'
+  }
+
+  return 'Pushing for higher scope/quality increases both time and cost.'
+}
 
 function ConstraintBar({ label, value, color }: ConstraintBarProps) {
   return (
@@ -143,11 +180,17 @@ function ConstraintBar({ label, value, color }: ConstraintBarProps) {
 
 function TriangleSimulator() {
   const svgRef = useRef<SVGSVGElement | null>(null)
-  const [handle, setHandle] = useState<Point>(() => centroid(TRIANGLE))
+  const triangleCentroid = useMemo(() => centroid(TRIANGLE), [])
+  const [handle, setHandle] = useState<Point>(() => triangleCentroid)
+  const weights = useMemo(() => barycentricWeights(handle, TRIANGLE), [handle])
 
   const values = useMemo(
-    () => mapPointToConstraintValues(handle, TRIANGLE),
-    [handle],
+    () => mapWeightsToScores(weights),
+    [weights],
+  )
+  const liveExplanation = useMemo(
+    () => describeConstraintPosition(weights),
+    [weights],
   )
 
   const updateHandleFromPointer = (clientX: number, clientY: number) => {
@@ -244,14 +287,36 @@ function TriangleSimulator() {
       </div>
 
       <div className="bars-panel" aria-live="polite">
-        <ConstraintBar label="Cost" value={values.cost} color="#0ea5a4" />
-        <ConstraintBar label="Time" value={values.time} color="#2563eb" />
         <ConstraintBar
-          label="Scope"
+          label="Cost efficiency"
+          value={values.cost}
+          color="#0ea5a4"
+        />
+        <ConstraintBar
+          label="Schedule speed"
+          value={values.time}
+          color="#2563eb"
+        />
+        <ConstraintBar
+          label="Scope / Quality level"
           value={values.scope}
           color="#22c55e"
         />
       </div>
+
+      <div className="simulator-controls">
+        <button
+          type="button"
+          className="reset-button"
+          aria-label="Reset to balanced position"
+          onClick={() => setHandle(triangleCentroid)}
+        >
+          Reset
+        </button>
+      </div>
+      <p className="live-explanation" aria-live="polite">
+        {liveExplanation}
+      </p>
     </div>
   )
 }
@@ -261,9 +326,6 @@ function App() {
     <main className="app-shell">
       <h1>Triple Constraint Simulator</h1>
       <TriangleSimulator />
-      <p className="explanation">
-        Move the handle inside the triangle to explore project trade-offs.
-      </p>
     </main>
   )
 }
