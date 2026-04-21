@@ -109,8 +109,8 @@ export const mapPointToConstraintValues = (
     clamp(50 + (weight - 1 / 3) * 75, 0, 100)
 
   return {
-    time: toScore(weights.time),
-    cost: toScore(weights.cost),
+    time: 100 - toScore(weights.time),
+    cost: 100 - toScore(weights.cost),
     scope: toScore(weights.scope),
   }
 }
