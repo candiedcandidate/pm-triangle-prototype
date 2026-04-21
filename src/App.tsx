@@ -127,6 +127,7 @@ const BALANCE_THRESHOLD = 0.1
 
 const describeConstraintPosition = (weights: ConstraintValues): string => {
   const target = 1 / 3
+  const dominanceThreshold = 0.02
   const maxDeviationFromBalanced = Math.max(
     Math.abs(weights.time - target),
     Math.abs(weights.cost - target),
@@ -137,12 +138,28 @@ const describeConstraintPosition = (weights: ConstraintValues): string => {
     return 'The project is balanced across time, cost, and scope/quality.'
   }
 
-  if (weights.cost >= weights.time && weights.cost >= weights.scope) {
-    return 'Optimizing for lower cost increases schedule pressure and limits scope/quality.'
+  const maxWeight = Math.max(weights.time, weights.cost, weights.scope)
+  const weightedConstraints: Array<{ name: 'time' | 'cost' | 'scope'; value: number }> = [
+    { name: 'time', value: weights.time },
+    { name: 'cost', value: weights.cost },
+    { name: 'scope', value: weights.scope },
+  ]
+  const dominantConstraints = weightedConstraints.filter(
+    ({ value }) => maxWeight - value <= dominanceThreshold,
+  )
+
+  if (dominantConstraints.length !== 1) {
+    return 'The project is leaning toward one constraint, which reduces flexibility in the others.'
   }
 
-  if (weights.time >= weights.cost && weights.time >= weights.scope) {
-    return 'Optimizing for faster delivery increases cost pressure and limits scope/quality.'
+  const [{ name: dominantConstraint }] = dominantConstraints
+
+  if (dominantConstraint === 'cost') {
+    return 'Cost efficiency is highest here, but optimizing for lower cost increases schedule pressure and limits scope/quality.'
+  }
+
+  if (dominantConstraint === 'time') {
+    return 'Schedule speed is highest here, but optimizing for faster delivery increases cost pressure and limits scope/quality.'
   }
 
   return 'Pushing for higher scope/quality increases both time and cost.'
