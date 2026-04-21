@@ -107,8 +107,28 @@ h1 {
   color: #475569;
 }
 
-.explanation {
-  margin: 1.25rem 0 0;
+.simulator-controls {
+  display: flex;
+  justify-content: center;
+}
+
+.reset-button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reset-button:hover {
+  background: #f8fafc;
+}
+
+.live-explanation {
+  margin: 0;
   text-align: center;
   color: #334155;
 }

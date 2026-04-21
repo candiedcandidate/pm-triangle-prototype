@@ -125,6 +125,30 @@ const TRIANGLE: Triangle = {
 }
 
 const HANDLE_RADIUS = 3.5
+const BALANCE_THRESHOLD = 0.1
+
+const describeConstraintPosition = (weights: ConstraintValues): string => {
+  const target = 1 / 3
+  const maxDeviationFromBalanced = Math.max(
+    Math.abs(weights.time - target),
+    Math.abs(weights.cost - target),
+    Math.abs(weights.scope - target),
+  )
+
+  if (maxDeviationFromBalanced <= BALANCE_THRESHOLD) {
+    return 'The project is balanced across time, cost, and scope/quality.'
+  }
+
+  if (weights.cost >= weights.time && weights.cost >= weights.scope) {
+    return 'Optimizing for lower cost increases schedule pressure and limits scope/quality.'
+  }
+
+  if (weights.time >= weights.cost && weights.time >= weights.scope) {
+    return 'Optimizing for faster delivery increases cost pressure and limits scope/quality.'
+  }
+
+  return 'Pushing for higher scope/quality increases both time and cost.'
+}
 
 function ConstraintBar({ label, value, color }: ConstraintBarProps) {
   return (
@@ -143,11 +167,17 @@ function ConstraintBar({ label, value, color }: ConstraintBarProps) {
 
 function TriangleSimulator() {
   const svgRef = useRef<SVGSVGElement | null>(null)
-  const [handle, setHandle] = useState<Point>(() => centroid(TRIANGLE))
+  const triangleCentroid = useMemo(() => centroid(TRIANGLE), [])
+  const [handle, setHandle] = useState<Point>(() => triangleCentroid)
+  const weights = useMemo(() => barycentricWeights(handle, TRIANGLE), [handle])
 
   const values = useMemo(
     () => mapPointToConstraintValues(handle, TRIANGLE),
     [handle],
+  )
+  const liveExplanation = useMemo(
+    () => describeConstraintPosition(weights),
+    [weights],
   )
 
   const updateHandleFromPointer = (clientX: number, clientY: number) => {
@@ -244,14 +274,35 @@ function TriangleSimulator() {
       </div>
 
       <div className="bars-panel" aria-live="polite">
-        <ConstraintBar label="Cost" value={values.cost} color="#0ea5a4" />
-        <ConstraintBar label="Time" value={values.time} color="#2563eb" />
         <ConstraintBar
-          label="Scope"
+          label="Cost efficiency"
+          value={values.cost}
+          color="#0ea5a4"
+        />
+        <ConstraintBar
+          label="Schedule speed"
+          value={values.time}
+          color="#2563eb"
+        />
+        <ConstraintBar
+          label="Scope / Quality level"
           value={values.scope}
           color="#22c55e"
         />
       </div>
+
+      <div className="simulator-controls">
+        <button
+          type="button"
+          className="reset-button"
+          onClick={() => setHandle(triangleCentroid)}
+        >
+          Reset
+        </button>
+      </div>
+      <p className="live-explanation" aria-live="polite">
+        {liveExplanation}
+      </p>
     </div>
   )
 }
@@ -261,9 +312,6 @@ function App() {
     <main className="app-shell">
       <h1>Triple Constraint Simulator</h1>
       <TriangleSimulator />
-      <p className="explanation">
-        Move the handle inside the triangle to explore project trade-offs.
-      </p>
     </main>
   )
 }
