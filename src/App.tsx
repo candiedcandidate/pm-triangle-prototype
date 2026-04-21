@@ -103,17 +103,13 @@ const constrainPointToTriangle = (point: Point, triangle: Triangle): Point => {
     )
 }
 
-const mapPointToConstraintValues = (
-  point: Point,
-  triangle: Triangle,
-): ConstraintValues => {
-  const weights = barycentricWeights(point, triangle)
+const mapWeightsToConstraintValues = (weights: ConstraintValues): ConstraintValues => {
   const toScore = (weight: number): number =>
     clamp(50 + (weight - 1 / 3) * 75, 0, 100)
 
   return {
-    time: 100 - toScore(weights.time),
-    cost: 100 - toScore(weights.cost),
+    time: toScore(weights.time),
+    cost: toScore(weights.cost),
     scope: toScore(weights.scope),
   }
 }
@@ -172,8 +168,8 @@ function TriangleSimulator() {
   const weights = useMemo(() => barycentricWeights(handle, TRIANGLE), [handle])
 
   const values = useMemo(
-    () => mapPointToConstraintValues(handle, TRIANGLE),
-    [handle],
+    () => mapWeightsToConstraintValues(weights),
+    [weights],
   )
   const liveExplanation = useMemo(
     () => describeConstraintPosition(weights),
